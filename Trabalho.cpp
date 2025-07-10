@@ -40,6 +40,12 @@ void cadastrarObra();
 void adicionarEstrutura();
 void adicionarPeca();
 void listarObras();
+void editarObra();
+void editarEstrutura();
+void editarPeca();
+void excluirObra();
+void excluirEstrutura();
+void excluirPeca();
 
 int main() {
     int opcao;
@@ -64,6 +70,24 @@ int main() {
                 listarObras();
                 break;
             case 5:
+                editarObra();
+                break;
+            case 6:
+                editarEstrutura();
+                break;
+            case 7:
+                editarPeca();
+                break;
+            case 8:
+                excluirObra();
+                break;
+            case 9:
+                excluirEstrutura();
+                break;
+            case 10:
+                excluirPeca();
+                break;
+            case 11:
                 printf("Saindo...\n");
                 return 0;
             default:
@@ -81,7 +105,13 @@ void exibirMenu() {
     printf("2. Adicionar Estrutura a Obra\n");
     printf("3. Adicionar Peça a Estrutura\n");
     printf("4. Listar Todas as Obras\n");
-    printf("5. Sair\n");
+    printf("5. Editar Obra\n");
+    printf("6. Editar Estrutura\n");
+    printf("7. Editar Peça\n");
+    printf("8. Excluir Obra\n");
+    printf("9. Excluir Estrutura\n");
+    printf("10. Excluir Peça\n");
+    printf("11. Sair\n");
 }
 
 // Cadastra uma nova obra
@@ -98,7 +128,6 @@ void cadastrarObra() {
     fgets(o.nome, TAM_STR, stdin);
     o.nome[strcspn(o.nome, "\n")] = '\0';
 
-    // Verificar se já existe uma obra com esse nome
     for (int i = 0; i < totalObras; i++) {
         if (strcmp(bancoObras[i].nome, o.nome) == 0) {
             printf("Já existe uma obra com esse nome.\n");
@@ -142,7 +171,6 @@ void adicionarEstrutura() {
     fgets(e.codigo, TAM_STR, stdin);
     e.codigo[strcspn(e.codigo, "\n")] = '\0';
 
-    // Verifica se estrutura já existe nessa obra
     for (int j = 0; j < bancoObras[idxObra].totalEstruturas; j++) {
         if (strcmp(bancoObras[idxObra].estruturas[j].codigo, e.codigo) == 0) {
             printf("Estrutura com código '%s' já existe nessa obra.\n", e.codigo);
@@ -202,7 +230,6 @@ void adicionarPeca() {
     fgets(p.codigo, TAM_STR, stdin);
     p.codigo[strcspn(p.codigo, "\n")] = '\0';
 
-    // Verifica duplicado
     for (int k = 0; k < estrutura->totalPecas; k++) {
         if (strcmp(estrutura->pecas[k].codigo, p.codigo) == 0) {
             printf("Peça com código '%s' já existe nessa estrutura.\n", p.codigo);
@@ -216,7 +243,7 @@ void adicionarPeca() {
 
     printf("Quantidade Enviada: ");
     scanf("%d", &p.quantidade);
-    getchar(); // Limpar '\n'
+    getchar();
 
     strcpy(p.status, "enviada");
 
@@ -245,4 +272,293 @@ void listarObras() {
             }
         }
     }
+}
+
+// Edita o nome de uma obra
+void editarObra() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR];
+    printf("Nome da obra a ser editada: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            printf("Novo nome para a obra: ");
+            fgets(bancoObras[i].nome, TAM_STR, stdin);
+            bancoObras[i].nome[strcspn(bancoObras[i].nome, "\n")] = '\0';
+            printf("Obra atualizada com sucesso!\n");
+            return;
+        }
+    }
+
+    printf("Obra '%s' não encontrada.\n", nomeObra);
+}
+
+// Edita o código de uma estrutura
+void editarEstrutura() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR], codEstrutura[TAM_STR];
+    printf("Nome da obra: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    printf("Código da estrutura a ser editada: ");
+    fgets(codEstrutura, TAM_STR, stdin);
+    codEstrutura[strcspn(codEstrutura, "\n")] = '\0';
+
+    int idxObra = -1;
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            idxObra = i;
+            break;
+        }
+    }
+
+    if (idxObra == -1) {
+        printf("Obra '%s' não encontrada.\n", nomeObra);
+        return;
+    }
+
+    Estrutura *estrutura = NULL;
+    for (int j = 0; j < bancoObras[idxObra].totalEstruturas; j++) {
+        if (strcmp(bancoObras[idxObra].estruturas[j].codigo, codEstrutura) == 0) {
+            estrutura = &bancoObras[idxObra].estruturas[j];
+            break;
+        }
+    }
+
+    if (!estrutura) {
+        printf("Estrutura '%s' não encontrada.\n", codEstrutura);
+        return;
+    }
+
+    printf("Novo código para a estrutura: ");
+    fgets(estrutura->codigo, TAM_STR, stdin);
+    estrutura->codigo[strcspn(estrutura->codigo, "\n")] = '\0';
+
+    printf("Estrutura atualizada com sucesso!\n");
+}
+
+// Edita posição ou quantidade de uma peça
+void editarPeca() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR], codEstrutura[TAM_STR], codPeca[TAM_STR];
+    printf("Nome da obra: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    printf("Código da estrutura: ");
+    fgets(codEstrutura, TAM_STR, stdin);
+    codEstrutura[strcspn(codEstrutura, "\n")] = '\0';
+
+    printf("Código da peça a ser editada: ");
+    fgets(codPeca, TAM_STR, stdin);
+    codPeca[strcspn(codPeca, "\n")] = '\0';
+
+    int idxObra = -1;
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            idxObra = i;
+            break;
+        }
+    }
+
+    if (idxObra == -1) {
+        printf("Obra '%s' não encontrada.\n", nomeObra);
+        return;
+    }
+
+    Estrutura *estrutura = NULL;
+    for (int j = 0; j < bancoObras[idxObra].totalEstruturas; j++) {
+        if (strcmp(bancoObras[idxObra].estruturas[j].codigo, codEstrutura) == 0) {
+            estrutura = &bancoObras[idxObra].estruturas[j];
+            break;
+        }
+    }
+
+    if (!estrutura) {
+        printf("Estrutura '%s' não encontrada.\n", codEstrutura);
+        return;
+    }
+
+    Peca *peca = NULL;
+    for (int k = 0; k < estrutura->totalPecas; k++) {
+        if (strcmp(estrutura->pecas[k].codigo, codPeca) == 0) {
+            peca = &estrutura->pecas[k];
+            break;
+        }
+    }
+
+    if (!peca) {
+        printf("Peça '%s' não encontrada.\n", codPeca);
+        return;
+    }
+
+    printf("Nova posição (atual: %s): ", peca->posicao);
+    fgets(peca->posicao, TAM_STR, stdin);
+    peca->posicao[strcspn(peca->posicao, "\n")] = '\0';
+
+    printf("Nova quantidade (atual: %d): ", peca->quantidade);
+    scanf("%d", &peca->quantidade);
+    getchar();
+
+    printf("Peça atualizada com sucesso!\n");
+}
+
+// Exclui uma obra e tudo que ela contém
+void excluirObra() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR];
+    printf("Nome da obra a ser excluída: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            for (int j = i; j < totalObras - 1; j++) {
+                bancoObras[j] = bancoObras[j + 1];
+            }
+            totalObras--;
+            printf("Obra '%s' excluída com sucesso!\n", nomeObra);
+            return;
+        }
+    }
+
+    printf("Obra '%s' não encontrada.\n", nomeObra);
+}
+
+// Exclui uma estrutura e suas peças
+void excluirEstrutura() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR], codEstrutura[TAM_STR];
+    printf("Nome da obra: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    printf("Código da estrutura a ser excluída: ");
+    fgets(codEstrutura, TAM_STR, stdin);
+    codEstrutura[strcspn(codEstrutura, "\n")] = '\0';
+
+    int idxObra = -1;
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            idxObra = i;
+            break;
+        }
+    }
+
+    if (idxObra == -1) {
+        printf("Obra '%s' não encontrada.\n", nomeObra);
+        return;
+    }
+
+    Estrutura *estrutura = NULL;
+    int idxEstrutura = -1;
+    for (int j = 0; j < bancoObras[idxObra].totalEstruturas; j++) {
+        if (strcmp(bancoObras[idxObra].estruturas[j].codigo, codEstrutura) == 0) {
+            idxEstrutura = j;
+            estrutura = &bancoObras[idxObra].estruturas[j];
+            break;
+        }
+    }
+
+    if (!estrutura) {
+        printf("Estrutura '%s' não encontrada.\n", codEstrutura);
+        return;
+    }
+
+    for (int j = idxEstrutura; j < bancoObras[idxObra].totalEstruturas - 1; j++) {
+        bancoObras[idxObra].estruturas[j] = bancoObras[idxObra].estruturas[j + 1];
+    }
+    bancoObras[idxObra].totalEstruturas--;
+
+    printf("Estrutura '%s' excluída com sucesso!\n", codEstrutura);
+}
+
+// Exclui uma peça
+void excluirPeca() {
+    if (totalObras == 0) {
+        printf("Nenhuma obra cadastrada.\n");
+        return;
+    }
+
+    char nomeObra[TAM_STR], codEstrutura[TAM_STR], codPeca[TAM_STR];
+    printf("Nome da obra: ");
+    fgets(nomeObra, TAM_STR, stdin);
+    nomeObra[strcspn(nomeObra, "\n")] = '\0';
+
+    printf("Código da estrutura: ");
+    fgets(codEstrutura, TAM_STR, stdin);
+    codEstrutura[strcspn(codEstrutura, "\n")] = '\0';
+
+    printf("Código da peça a ser excluída: ");
+    fgets(codPeca, TAM_STR, stdin);
+    codPeca[strcspn(codPeca, "\n")] = '\0';
+
+    int idxObra = -1;
+    for (int i = 0; i < totalObras; i++) {
+        if (strcmp(bancoObras[i].nome, nomeObra) == 0) {
+            idxObra = i;
+            break;
+        }
+    }
+
+    if (idxObra == -1) {
+        printf("Obra '%s' não encontrada.\n", nomeObra);
+        return;
+    }
+
+    Estrutura *estrutura = NULL;
+    for (int j = 0; j < bancoObras[idxObra].totalEstruturas; j++) {
+        if (strcmp(bancoObras[idxObra].estruturas[j].codigo, codEstrutura) == 0) {
+            estrutura = &bancoObras[idxObra].estruturas[j];
+            break;
+        }
+    }
+
+    if (!estrutura) {
+        printf("Estrutura '%s' não encontrada.\n", codEstrutura);
+        return;
+    }
+
+    int idxPeca = -1;
+    for (int k = 0; k < estrutura->totalPecas; k++) {
+        if (strcmp(estrutura->pecas[k].codigo, codPeca) == 0) {
+            idxPeca = k;
+            break;
+        }
+    }
+
+    if (idxPeca == -1) {
+        printf("Peça '%s' não encontrada.\n", codPeca);
+        return;
+    }
+
+    for (int k = idxPeca; k < estrutura->totalPecas - 1; k++) {
+        estrutura->pecas[k] = estrutura->pecas[k + 1];
+    }
+    estrutura->totalPecas--;
+
+    printf("Peça '%s' excluída com sucesso!\n", codPeca);
 }
